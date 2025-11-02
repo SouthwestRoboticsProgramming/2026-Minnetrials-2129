@@ -19,13 +19,12 @@ public class Intake extends SubsystemBase {
     }
     public Command idle() {
         return this.run(() -> {
-            Intake.setControl(new NeutralOut());
+            intake.setControl(new NeutralOut());
         });
     }
     public Command run() {
         return this.run(() -> {
-            Intake.setControl(new VoltageOut(2.0));
+            intake.setControl(new VoltageOut(4.0));
         });
     }
-
-}
+}    
