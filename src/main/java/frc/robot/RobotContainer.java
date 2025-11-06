@@ -17,12 +17,13 @@ public class RobotContainer {
 
     drivebase = new Drivebase();
     driverController = new CommandXboxController(0);
+    operatorController = new CommandXboxController(1);
     configureBindings();
     shooter = new Shooter();
     intake = new Intake();
     
-    }
   private final CommandXboxController driverController;
+  private final CommandXboxController operatorController;
   private final Drivebase drivebase; 
   private final Shooter shooter;
   private final Intake intake;
@@ -34,18 +35,15 @@ public class RobotContainer {
     shooter.setDefaultCommand(shooter.idle());
     // Bind the flywheels to the left trigger on the operator controller.
     // Use a Trigger to convert the analog input into a digital (boolean) one.
-    new Trigger(() -> (operatorController.getLeftTriggerAxis() > 0.5)
-      .whileTrue(shooter.spinFlywheel()));  
+    new Trigger(() -> operatorController.getLeftTriggerAxis() > 0.5)
+      .whileTrue(shooter.spinFlywheel());
     intake.setDefaultCommand(intake.idle(() -> {
       // Stop the intake to conserve battery power.
       intake.idle();
     }));
     // Bind the intake to the right trigger on the operator controller.
     new Trigger(() -> (operatorController.getRightTriggerAxis() > 0.5))
-    ).whileTrue(intake.run(() -> {
-      // Run the intake to pick up game pieces.
-      intake.run();
-    }));
+      .whileTrue(intake.run(intake.run()));
   }
 
   public Command getAutonomousCommand() {
