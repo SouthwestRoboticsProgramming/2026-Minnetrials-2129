@@ -15,6 +15,7 @@ public class Drivebase extends SubsystemBase {
     private final TalonSRX rightMotor2;
 
     public Drivebase() {
+      //Gives each motor a unique ID that corresponds to the ID set in Phoenix Tuner
         leftMotor1 = new TalonSRX(1);
         leftMotor2 = new TalonSRX(2);
         rightMotor1 = new TalonSRX(3);
