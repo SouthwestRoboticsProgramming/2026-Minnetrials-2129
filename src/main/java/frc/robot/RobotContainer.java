@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Subsystems.Drivebase;
 import frc.robot.Subsystems.Intake;
+import frc.robot.Subsystems.Intake2;
 import frc.robot.Subsystems.Shooter;
 public class RobotContainer {
   public RobotContainer() {
@@ -21,12 +22,14 @@ public class RobotContainer {
     configureBindings();
     shooter = new Shooter();
     intake = new Intake();
-    
+    intake2 = new Intake2();
+  }  
   private final CommandXboxController driverController;
   private final CommandXboxController operatorController;
   private final Drivebase drivebase; 
   private final Shooter shooter;
   private final Intake intake;
+  private final Intake2 intake2;
   private void configureBindings() {
     drivebase.setDefaultCommand(drivebase.arcadeDrive(
       () -> MathUtil.applyDeadband(-driverController.getLeftY(), 0.1),
@@ -37,13 +40,10 @@ public class RobotContainer {
     // Use a Trigger to convert the analog input into a digital (boolean) one.
     new Trigger(() -> operatorController.getLeftTriggerAxis() > 0.5)
       .whileTrue(shooter.spinFlywheel());
-    intake.setDefaultCommand(intake.idle(() -> {
-      // Stop the intake to conserve battery power.
-      intake.idle();
-    }));
+    intake.setDefaultCommand(intake.idle());
     // Bind the intake to the right trigger on the operator controller.
     new Trigger(() -> (operatorController.getRightTriggerAxis() > 0.5))
-      .whileTrue(intake.run(intake.run()));
+      .whileTrue(intake.run()).whileTrue(intake2.run());
   }
 
   public Command getAutonomousCommand() {
