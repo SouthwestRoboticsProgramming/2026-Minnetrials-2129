@@ -51,9 +51,13 @@ public class RobotContainer {
      .whileTrue(intake.run());
     new Trigger(() -> operatorController.getLeftTriggerAxis()>0.5)
      .whileTrue(intake.outake());
+    new Trigger(()-> operatorController.getLeftTriggerAxis()>0.5)
+     .whileTrue(butterArm.run());
     new Trigger(()-> operatorController.getRightTriggerAxis()>0.5)
      .whileTrue(intake.butter()); 
-     .whileTrue(butterArm.run());
+    new Trigger(()-> operatorController.getRightTriggerAxis()>0.5)
+     .whileTrue(butterArm.idle());
+     
   }   
 
   public Command getAutonomousCommand() {
