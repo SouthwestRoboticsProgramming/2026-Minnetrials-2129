@@ -23,15 +23,16 @@ public class Intake extends SubsystemBase {
         TalonFXConfiguration intakeConfig = new TalonFXConfiguration();
         intakeConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
         intake.getConfigurator().apply(intakeConfig);
-        //intake2 motor configuration
-        intake2.setInverted(true);
+        //intake2 motor configuration and inversion, follows intake1
         TalonFXConfiguration intake2Config = new TalonFXConfiguration();
+        intake2Config.MotorOutput.Inverted = com.ctre.phoenix6.signals.InvertedValue.Clockwise_Positive;
         intake2Config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
         intake2.setControl(new Follower(5,true));
         intake2.getConfigurator().apply(intake2Config);
       
         
     } 
+    // Sets intake to idle position
     public Command idle() {
         return this.run(() -> {
             intake.setControl(new NeutralOut());
@@ -39,6 +40,7 @@ public class Intake extends SubsystemBase {
            
         });
     }
+    // Moves intake to run position
     public Command run() {
         return this.run(() -> {
             intake.setControl(new VoltageOut(4.0));
@@ -46,6 +48,7 @@ public class Intake extends SubsystemBase {
             
         });
     }
+    // Moves intake to outake position
     public Command outake() {
         return this.run(() -> {
             intake.setControl(new VoltageOut(-8.0));
@@ -54,6 +57,7 @@ public class Intake extends SubsystemBase {
 
         });
     }
+    // Moves intake to butter position
     public Command butter() {
         return this.run(() -> {
             intake.setControl(new VoltageOut(4.0));
