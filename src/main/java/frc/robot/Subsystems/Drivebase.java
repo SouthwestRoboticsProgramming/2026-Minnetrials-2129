@@ -1,4 +1,4 @@
-package frc.robot.Subsystems;
+package frc.robot.subsystems;
 
 import java.util.function.Supplier;
 
@@ -20,8 +20,6 @@ public class Drivebase extends SubsystemBase {
         leftMotor2 = new TalonSRX(2);
         rightMotor1 = new TalonSRX(3);
         rightMotor2 = new TalonSRX(4);
-
-    
     }
       
     public Command arcadeDrive(
@@ -52,5 +50,5 @@ public class Drivebase extends SubsystemBase {
         
       });
     }
-   
+  
 }

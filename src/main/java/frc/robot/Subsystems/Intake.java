@@ -1,4 +1,4 @@
-package frc.robot.Subsystems;
+package frc.robot.subsystems;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
@@ -12,47 +12,46 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Intake extends SubsystemBase {
     // Defines motors
-    private final TalonFX intake;
-    private final TalonFX intake2;
+    private final TalonFX intakeTop;
+    private final TalonFX intakeBottom;
   
     public Intake() {
-        intake = new TalonFX(5);
-        intake2 = new TalonFX(6);
+        intakeTop = new TalonFX(5);
+        intakeBottom = new TalonFX(6);
         
-        //intake motor configuration
+        //top motor configuration
         TalonFXConfiguration intakeConfig = new TalonFXConfiguration();
         intakeConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-        intake.getConfigurator().apply(intakeConfig);
-        //intake2 motor configuration and inversion, follows intake1
-        TalonFXConfiguration intake2Config = new TalonFXConfiguration();
-        intake2Config.MotorOutput.Inverted = com.ctre.phoenix6.signals.InvertedValue.Clockwise_Positive;
-        intake2Config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-        intake2.setControl(new Follower(5,true));
-        intake2.getConfigurator().apply(intake2Config);
+
+        intakeTop.getConfigurator().apply(intakeConfig);
+        // Bottom motor is inverted + configurated to follow top motor
+        intakeConfig.MotorOutput.Inverted = com.ctre.phoenix6.signals.InvertedValue.Clockwise_Positive;
+        intakeBottom.setControl(new Follower(5,true));
+        intakeBottom.getConfigurator().apply(intakeConfig);
       
         
     } 
     // Sets intake to idle position
     public Command idle() {
         return this.run(() -> {
-            intake.setControl(new NeutralOut());
-            intake2.setControl(new NeutralOut());
+            intakeTop.setControl(new NeutralOut());
+            intakeBottom.setControl(new NeutralOut());
            
         });
     }
     // Moves intake to run position
-    public Command run() {
+    public Command intake() {
         return this.run(() -> {
-            intake.setControl(new VoltageOut(4.0));
-            intake2.setControl(new VoltageOut(4.0));
+            intakeTop.setControl(new VoltageOut(4.0));
+            intakeBottom.setControl(new VoltageOut(4.0));
             
         });
     }
     // Moves intake to outake position
     public Command outake() {
         return this.run(() -> {
-            intake.setControl(new VoltageOut(-8.0));
-            intake2.setControl(new VoltageOut(8.0));
+            intakeTop.setControl(new VoltageOut(-8.0));
+            intakeBottom.setControl(new VoltageOut(8.0));
            
 
         });
@@ -60,8 +59,8 @@ public class Intake extends SubsystemBase {
     // Moves intake to butter position
     public Command butter() {
         return this.run(() -> {
-            intake.setControl(new VoltageOut(4.0));
-            intake2.setControl(new VoltageOut(-4.0));
+            intakeTop.setControl(new VoltageOut(4.0));
+            intakeBottom.setControl(new VoltageOut(-4.0));
         
         });
     }

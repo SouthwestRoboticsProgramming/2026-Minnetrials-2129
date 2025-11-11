@@ -9,29 +9,32 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Subsystems.ButterArm;
-import frc.robot.Subsystems.Drivebase;
-import frc.robot.Subsystems.Intake;
-import frc.robot.Subsystems.Shooter;
+import frc.lib.net.NTDouble;
+import frc.lib.net.NTEntry;
+import frc.robot.subsystems.ButterArm;
+import frc.robot.subsystems.Drivebase;
+import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.Shooter;
 public class RobotContainer {
-  public RobotContainer() {
 
+  private final NTEntry<Double> TRIGGER_THRESHOLD = new NTDouble("Trigger Threshold", 0.5).setPersistent();
+
+  private final CommandXboxController driverController;
+  private final CommandXboxController operatorController;
+  private final Drivebase drivebase; 
+  private final Shooter shooter;
+  private final Intake intake;
+  private final ButterArm butterArm;
+
+  public RobotContainer() {
     drivebase = new Drivebase();
     driverController = new CommandXboxController(0);
     operatorController = new CommandXboxController(1);
     configureBindings();
     shooter = new Shooter();
     intake = new Intake();
-    intake2 = new Intake();
     butterArm = new ButterArm();
   }  
-  private final CommandXboxController driverController;
-  private final CommandXboxController operatorController;
-  private final Drivebase drivebase; 
-  private final Shooter shooter;
-  private final Intake intake;
-  private final Intake intake2;
-  private final ButterArm butterArm;
 
   private void configureBindings() {
     drivebase.setDefaultCommand(drivebase.arcadeDrive(
@@ -39,24 +42,30 @@ public class RobotContainer {
       () -> MathUtil.applyDeadband(driverController.getRightX(), 0.1)));
      // Put the shooter flywheel in idle by default to save battery power.
     shooter.setDefaultCommand(shooter.idle());
-    // Bind the flywheels to the left trigger on the operator controller.
-    // Use a Trigger to convert the analog input into a digital (boolean) one.
-    new Trigger(() -> driverController.getLeftTriggerAxis() > 0.5)
-      .whileTrue(shooter.spinFlywheel());
     intake.setDefaultCommand(intake.idle());
-    // Bind the ball intake to the right trigger on the operator controller.
-    intake2.setDefaultCommand(intake2.idle());
     butterArm.setDefaultCommand(butterArm.idle());
-    new Trigger(()-> driverController.getRightTriggerAxis()>0.5)
-     .whileTrue(intake.run());
-    new Trigger(() -> operatorController.getLeftTriggerAxis()>0.5)
-     .whileTrue(intake.outake());
-    new Trigger(()-> operatorController.getLeftTriggerAxis()>0.5)
-     .whileTrue(butterArm.run());
-    new Trigger(()-> operatorController.getRightTriggerAxis()>0.5)
-     .whileTrue(intake.butter()); 
-    new Trigger(()-> operatorController.getRightTriggerAxis()>0.5)
-     .whileTrue(butterArm.idle());
+    
+    new Trigger(() -> driverController.getLeftTriggerAxis() > TRIGGER_THRESHOLD.get()).whileTrue(shooter.spinFlywheel());
+
+    // Bind the ball intake to the right trigger on the operator controller.
+    
+    
+    new Trigger(()-> driverController.getRightTriggerAxis() > TRIGGER_THRESHOLD.get()).whileTrue(intake.intake());
+
+
+    /*
+    Left trigger - outtake butter
+    Right trigger - intake butter
+    
+    */
+
+    // Ball outake
+
+    new Trigger(()-> operatorController.getLeftTriggerAxis() > TRIGGER_THRESHOLD.get()).whileTrue(intake.outake());
+    operatorController.y().onTrue(butterArm.up());
+    // Butter intake
+    new Trigger(()-> operatorController.getRightTriggerAxis() > TRIGGER_THRESHOLD.get()).whileTrue(intake.butter());
+   
      
   }   
 
