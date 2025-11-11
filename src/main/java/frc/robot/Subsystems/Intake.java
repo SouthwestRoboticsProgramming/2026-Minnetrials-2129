@@ -9,8 +9,15 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.lib.net.NTDouble;
+import frc.lib.net.NTEntry;
 
 public class Intake extends SubsystemBase {
+    private final NTEntry<Double> INTAKE_VOLTAGE = new NTDouble("Intake/Intake Voltage", 4.0).setPersistent();
+    private final NTEntry<Double> OUTAKE_VOLTAGE = new NTDouble("Intake/Outake Voltage", -8.0).setPersistent();
+    private final NTEntry<Double> BUTTER_VOLTAGE = new NTDouble("Intake/Butter Voltage", 6.0).setPersistent();
+    private final NTEntry<Double> OUTAKE_BOTTOM_VOLTAGE = new NTDouble("Intake/Outake Bottom Voltage", 8.0).setPersistent();
+    private final NTEntry<Double> BUTTER_BOTTOM_VOLTAGE = new NTDouble("Intake/Butter Bottom Voltage", -7.0).setPersistent();
     // Defines motors
     private final TalonFX intakeTop;
     private final TalonFX intakeBottom;
@@ -42,16 +49,16 @@ public class Intake extends SubsystemBase {
     // Moves intake to run position
     public Command intake() {
         return this.run(() -> {
-            intakeTop.setControl(new VoltageOut(4.0));
-            intakeBottom.setControl(new VoltageOut(4.0));
+            intakeTop.setControl(new VoltageOut(INTAKE_VOLTAGE.get()));
+            intakeBottom.setControl(new VoltageOut(INTAKE_VOLTAGE.get()));
             
         });
     }
     // Moves intake to outake position
     public Command outake() {
         return this.run(() -> {
-            intakeTop.setControl(new VoltageOut(-8.0));
-            intakeBottom.setControl(new VoltageOut(8.0));
+            intakeTop.setControl(new VoltageOut(OUTAKE_VOLTAGE.get()));
+        intakeBottom.setControl(new VoltageOut(OUTAKE_BOTTOM_VOLTAGE.get()));
            
 
         });
@@ -59,8 +66,8 @@ public class Intake extends SubsystemBase {
     // Moves intake to butter position
     public Command butter() {
         return this.run(() -> {
-            intakeTop.setControl(new VoltageOut(4.0));
-            intakeBottom.setControl(new VoltageOut(-4.0));
+            intakeTop.setControl(new VoltageOut(BUTTER_VOLTAGE.get()));
+            intakeBottom.setControl(new VoltageOut(BUTTER_BOTTOM_VOLTAGE.get()));
         
         });
     }

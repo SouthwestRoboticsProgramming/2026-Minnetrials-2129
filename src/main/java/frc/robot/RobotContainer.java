@@ -3,7 +3,7 @@
 // the WPILib BSD license file in the root directory of this project.
 
 package frc.robot;
-
+// Import statements
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -15,17 +15,18 @@ import frc.robot.subsystems.ButterArm;
 import frc.robot.subsystems.Drivebase;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Shooter;
+// This class is where the bulk of the robot should be declared. 
 public class RobotContainer {
-
+  // Network table entry for trigger threshold
   private final NTEntry<Double> TRIGGER_THRESHOLD = new NTDouble("Trigger Threshold", 0.5).setPersistent();
-
+  // Define controllers and subsystems
   private final CommandXboxController driverController;
   private final CommandXboxController operatorController;
   private final Drivebase drivebase; 
   private final Shooter shooter;
   private final Intake intake;
   private final ButterArm butterArm;
-
+  // Constructor
   public RobotContainer() {
     drivebase = new Drivebase();
     driverController = new CommandXboxController(0);
@@ -35,32 +36,27 @@ public class RobotContainer {
     intake = new Intake();
     butterArm = new ButterArm();
   }  
-
+  // Configure button bindings
   private void configureBindings() {
+    // default commands
     drivebase.setDefaultCommand(drivebase.arcadeDrive(
       () -> MathUtil.applyDeadband(-driverController.getLeftY(), 0.1),
       () -> MathUtil.applyDeadband(driverController.getRightX(), 0.1)));
-     // Put the shooter flywheel in idle by default to save battery power.
+    
     shooter.setDefaultCommand(shooter.idle());
     intake.setDefaultCommand(intake.idle());
     butterArm.setDefaultCommand(butterArm.idle());
-    
+    // Shooter flywheel
     new Trigger(() -> driverController.getLeftTriggerAxis() > TRIGGER_THRESHOLD.get()).whileTrue(shooter.spinFlywheel());
-
-    // Bind the ball intake to the right trigger on the operator controller.
-    
-    
+    // Ball intake
     new Trigger(()-> driverController.getRightTriggerAxis() > TRIGGER_THRESHOLD.get()).whileTrue(intake.intake());
-
 
     /*
     Left trigger - outtake butter
     Right trigger - intake butter
-    
     */
 
     // Ball outake
-
     new Trigger(()-> operatorController.getLeftTriggerAxis() > TRIGGER_THRESHOLD.get()).whileTrue(intake.outake());
     operatorController.y().onTrue(butterArm.up());
     // Butter intake

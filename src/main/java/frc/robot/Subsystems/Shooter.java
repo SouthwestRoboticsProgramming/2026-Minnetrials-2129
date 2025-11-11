@@ -9,10 +9,13 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.lib.net.NTDouble;
+import frc.lib.net.NTEntry;
 
 public class Shooter extends SubsystemBase {
+  private final NTEntry<Double> SHOOTER_VOLTAGE = new NTDouble("Shooter/Shooter Voltage", 6.0).setPersistent();
   private final TalonFX flywheelMotor;
-  private static final double SHOOT_VOLTAGE = 6.0;
+  
 
   public Shooter() {
     flywheelMotor = new TalonFX(6);
@@ -29,7 +32,7 @@ public class Shooter extends SubsystemBase {
     public Command spinFlywheel() {
         return this.run(() -> {
           // Run the flywheel at the shooting speed.
-          flywheelMotor.setControl(new VoltageOut(SHOOT_VOLTAGE));
+          flywheelMotor.setControl(new VoltageOut(SHOOTER_VOLTAGE.get()));
         });
       }
 }
