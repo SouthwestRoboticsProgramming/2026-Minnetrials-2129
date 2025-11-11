@@ -10,11 +10,11 @@ import com.ctre.phoenix6.signals.InvertedValue;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
-
-
+import frc.lib.net.NTEntry;
+import frc.lib.net.NTDouble;
 
 public class ButterArm extends SubsystemBase {
+    private final NTEntry<Double> BUTTER_ARM_UP = new NTDouble("Butter Arm/Up Position", 30.0).setPersistent();
     // Defines motors
     private final TalonFX butterArm;
     private final PositionVoltage control;
@@ -23,8 +23,8 @@ public class ButterArm extends SubsystemBase {
         butterArm = new TalonFX(7);
         TalonFXConfiguration config = new TalonFXConfiguration();
         // Set neutral mode to brake
-        //config.Slot0.kP = Constants.kbutterArmkP.get(); need to add
-        //config.Slot0.kD = Constants.kbutterArmkD.get(); need to add
+        // TODO: config.Slot0.kP = Constants.kbutterArmkP.get();
+        // TODO: config.Slot0.kD = Constants.kbutterArmkD.get();
         config.Slot0.kP = 0.0;
         config.Slot0.kD = 0.0;
         

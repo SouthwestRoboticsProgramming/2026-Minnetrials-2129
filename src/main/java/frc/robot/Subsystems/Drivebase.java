@@ -7,14 +7,19 @@ import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.lib.LimelightHelpers;
+import frc.lib.net.NTDouble;
+import frc.lib.net.NTEntry;
 
 public class Drivebase extends SubsystemBase {
+    private final NTEntry<Double> AIM_kP = new NTDouble("Drivebase/Aim_kP", 0.0111).setPersistent(); // Proportional constant for aiming
+
     private final TalonSRX leftMotor1;
     private final TalonSRX leftMotor2;
     private final TalonSRX rightMotor1;
     private final TalonSRX rightMotor2;
 
-    public Drivebase() {
+    public Drivebase() {  
       //Gives each motor a unique ID that corresponds to the ID set in Phoenix Tuner
         leftMotor1 = new TalonSRX(1);
         leftMotor2 = new TalonSRX(2);
@@ -49,6 +54,15 @@ public class Drivebase extends SubsystemBase {
         rightMotor2.set(ControlMode.PercentOutput, rightWheels);
         
       });
+    }
+    
+    public Command aim() {
+      //max angle = 27 degrees
+      //max drivespeed percent = 0.3
+      //k=max drivespeed/max angle = 0.3/27=0.0111
+      Supplier<Double> turnSupplier = () -> LimelightHelpers.getTX("") * AIM_kP.get();
+
+      return arcadeDrive(() -> 0.0, turnSupplier);
     }
   
 }

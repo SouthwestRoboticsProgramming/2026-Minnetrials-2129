@@ -27,7 +27,7 @@ public class Intake extends SubsystemBase {
         // Bottom motor is inverted + configurated to follow top motor
         intakeConfig.MotorOutput.Inverted = com.ctre.phoenix6.signals.InvertedValue.Clockwise_Positive;
         intakeBottom.setControl(new Follower(5,true));
-        intakeBottom.getConfigurator().apply(intakeConfig);
+        intakeBottom.getConfigurator().apply(intakeConfig); 
       
         
     } 
