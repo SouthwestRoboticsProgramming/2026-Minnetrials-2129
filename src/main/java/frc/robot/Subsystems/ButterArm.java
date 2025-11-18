@@ -7,7 +7,6 @@ import com.ctre.phoenix6.hardware.TalonFX;
 //import com.ctre.phoenix6.signals.GravityTypeValue; need to add
 import com.ctre.phoenix6.signals.InvertedValue;
 //import com.google.flatbuffers.Constants; need to add
-
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.net.NTEntry;

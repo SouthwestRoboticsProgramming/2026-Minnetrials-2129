@@ -3,18 +3,24 @@
 // the WPILib BSD license file in the root directory of this project.
 
 package frc.robot;
-// Import statements
+// Import statements{
 import edu.wpi.first.math.MathUtil;
+//Command-based library imports
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+// Network table imports
 import frc.lib.net.NTDouble;
 import frc.lib.net.NTEntry;
+
+// Subsystem imports
 import frc.robot.subsystems.ButterArm;
 import frc.robot.subsystems.Drivebase;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Shooter;
+ 
 // This class is where the bulk of the robot should be declared. 
 public class RobotContainer {
   // Network table entry for trigger threshold
@@ -23,9 +29,10 @@ public class RobotContainer {
   private final CommandXboxController driverController;
   private final CommandXboxController operatorController;
   private final Drivebase drivebase; 
-  public final Shooter shooter;
+  private final Shooter shooter;
   public final Intake intake;
   public final ButterArm butterArm;
+  
   // Constructor
   public RobotContainer() {
     drivebase = new Drivebase();
@@ -35,6 +42,7 @@ public class RobotContainer {
     shooter = new Shooter();
     intake = new Intake();
     butterArm = new ButterArm();
+    
   }  
   // Configure button bindings
   private void configureBindings() {
@@ -46,10 +54,13 @@ public class RobotContainer {
     shooter.setDefaultCommand(shooter.idle());
     intake.setDefaultCommand(intake.idle());
     butterArm.setDefaultCommand(butterArm.idle());
+
     // Shooter flywheel
     new Trigger(() -> driverController.getLeftTriggerAxis() > TRIGGER_THRESHOLD.get()).whileTrue(shooter.spinFlywheel());
     // Ball intake
     new Trigger(()-> driverController.getRightTriggerAxis() > TRIGGER_THRESHOLD.get()).whileTrue(intake.intake());
+    // Auto align command
+    
 
     /*
     Left trigger - outtake butter
@@ -62,8 +73,13 @@ public class RobotContainer {
     // Butter intake
     new Trigger(()-> operatorController.getRightTriggerAxis() > TRIGGER_THRESHOLD.get()).whileTrue(intake.butter());
    
+    
+    
+    
+
      
-  }   
+  }  
+  
 
   public Command getAutonomousCommand() {
     return Commands.print("No autonomous command configured");

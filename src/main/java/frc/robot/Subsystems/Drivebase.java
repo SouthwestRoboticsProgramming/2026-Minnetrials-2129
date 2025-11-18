@@ -5,7 +5,7 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.lib.LimelightHelpers;
+
 import frc.lib.net.NTDouble;
 import frc.lib.net.NTEntry;
 
@@ -54,41 +54,9 @@ public class Drivebase extends SubsystemBase {
         
       });
     }
-  // Method to perform auto-align using Limelight for tank drive
-  public void limelightAutoAlignWithDrive(double forwardSpeed, double turnInput) {
-    double tx = LimelightHelpers.getTX("");
-    boolean hasTarget = LimelightHelpers.getTV("");
-    double kP = AIM_kP.get();
-
-    if (hasTarget) {
-        double autoTurn = kP * tx; // Auto turn based on Limelight
-        double combinedTurn = turnInput + autoTurn;  // Combine driver turn with auto turn
-
-        double leftWheels = forwardSpeed + combinedTurn;
-        double rightWheels = forwardSpeed - combinedTurn;
-
-        // Normalize to not exceed ±1
-        double maxOutput = Math.max(Math.abs(leftWheels), Math.abs(rightWheels));
-        if (maxOutput > 1.0) {
-            leftWheels /= maxOutput;
-            rightWheels /= maxOutput;
-        }
-        // Set motors
-        leftMotor1.set(ControlMode.PercentOutput, leftWheels);
-        leftMotor2.set(ControlMode.PercentOutput, leftWheels);
-        rightMotor1.set(ControlMode.PercentOutput, rightWheels);
-        rightMotor2.set(ControlMode.PercentOutput, rightWheels);
-    } else {
-        // No target, manual drive
-        leftMotor1.set(ControlMode.PercentOutput, forwardSpeed + turnInput);
-        leftMotor2.set(ControlMode.PercentOutput, forwardSpeed + turnInput);
-        rightMotor1.set(ControlMode.PercentOutput, forwardSpeed - turnInput);
-        rightMotor2.set(ControlMode.PercentOutput, forwardSpeed - turnInput);
-    }
+  
 }
 
   
     
     
-   
-}
