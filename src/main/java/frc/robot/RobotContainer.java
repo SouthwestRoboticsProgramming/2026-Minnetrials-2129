@@ -23,9 +23,9 @@ public class RobotContainer {
   private final CommandXboxController driverController;
   private final CommandXboxController operatorController;
   private final Drivebase drivebase; 
-  private final Shooter shooter;
-  private final Intake intake;
-  private final ButterArm butterArm;
+  public final Shooter shooter;
+  public final Intake intake;
+  public final ButterArm butterArm;
   // Constructor
   public RobotContainer() {
     drivebase = new Drivebase();
