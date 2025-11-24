@@ -51,9 +51,9 @@ public class RobotContainer {
       () -> MathUtil.applyDeadband(-driverController.getLeftY(), 0.1),
       () -> MathUtil.applyDeadband(driverController.getRightX(), 0.1)));
     
-    shooter.setDefaultCommand(shooter.idle());
-    intake.setDefaultCommand(intake.idle());
-    butterArm.setDefaultCommand(butterArm.idle());
+    //shooter.setDefaultCommand(shooter.idle());
+    //intake.setDefaultCommand(intake.idle());
+    //butterArm.setDefaultCommand(butterArm.idle());
 
     // Shooter flywheel
     new Trigger(() -> driverController.getLeftTriggerAxis() > TRIGGER_THRESHOLD.get()).whileTrue(shooter.spinFlywheel());

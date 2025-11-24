@@ -5,7 +5,7 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
+//network imports
 import frc.lib.net.NTDouble;
 import frc.lib.net.NTEntry;
 
@@ -26,34 +26,34 @@ public class Drivebase extends SubsystemBase {
   }
       
   public Command arcadeDrive(
-      Supplier<Double> forwardSupplier,
-      Supplier<Double> turnSupplier) {
-      return this.run(() -> {
+    Supplier<Double> forwardSupplier,
+    Supplier<Double> turnSupplier) {
+    return this.run(() -> {
         
-        // Get the latest control inputs.
-        double forward = forwardSupplier.get();
-        double turn = turnSupplier.get(); 
-        // Calculate how fast each set of wheels should turn.
-        // Calculate how fast each set of wheels should turn.
-        double leftWheels = forward + turn;
-        double rightWheels = -forward + turn;
+      // Get the latest control inputs.
+      double forward = forwardSupplier.get();
+      double turn = turnSupplier.get(); 
+      // Calculate how fast each set of wheels should turn.
+      // Calculate how fast each set of wheels should turn.
+      double leftWheels = forward + turn;
+      double rightWheels = -forward + turn;
 
-        // Desaturate wheel speeds if needed.
-        double maxOutput = Math.max(Math.abs(leftWheels), Math.abs(rightWheels));
-        if (maxOutput > 1.0) {
+      // Desaturate wheel speeds if needed.
+      double maxOutput = Math.max(Math.abs(leftWheels), Math.abs(rightWheels));
+      if (maxOutput > 1.0) {
         // Too fast! Our motor controllers aren't capable of this speed, so we
         // need to slow it down.
         leftWheels = leftWheels / maxOutput;
         rightWheels = rightWheels / maxOutput;
-        }
-        // Tell the motor controllers to spin the motors!
-        leftMotor1.set(ControlMode.PercentOutput, leftWheels);
-        leftMotor2.set(ControlMode.PercentOutput, leftWheels);
-        rightMotor1.set(ControlMode.PercentOutput, rightWheels);
-        rightMotor2.set(ControlMode.PercentOutput, rightWheels);
+      }
+      // Tell the motor controllers to spin the motors!
+      leftMotor1.set(ControlMode.PercentOutput, leftWheels);
+      leftMotor2.set(ControlMode.PercentOutput, leftWheels);
+      rightMotor1.set(ControlMode.PercentOutput, rightWheels);
+      rightMotor2.set(ControlMode.PercentOutput, rightWheels);
         
       });
-    }
+  }
   
 }
 
