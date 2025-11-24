@@ -14,7 +14,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 // Network table imports
 import frc.lib.net.NTDouble;
 import frc.lib.net.NTEntry;
-
+import frc.robot.logging.FieldView;
 // Subsystem imports
 import frc.robot.subsystems.ButterArm;
 import frc.robot.subsystems.Drivebase;
@@ -38,11 +38,11 @@ public class RobotContainer {
     drivebase = new Drivebase();
     driverController = new CommandXboxController(0);
     operatorController = new CommandXboxController(1);
-    configureBindings();
     shooter = new Shooter();
     intake = new Intake();
     butterArm = new ButterArm();
-    
+    configureBindings();
+    FieldView.publish();
   }  
   // Configure button bindings
   private void configureBindings() {
