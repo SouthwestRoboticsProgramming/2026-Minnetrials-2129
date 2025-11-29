@@ -11,6 +11,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.net.NTEntry;
 import frc.lib.net.NTDouble;
+
+
 // ButterArm subsystem class
 public class ButterArm extends SubsystemBase {
     // Network table entry for butter arm up position
@@ -42,22 +44,28 @@ public class ButterArm extends SubsystemBase {
         butterArm.setPosition(0.0);
     }
 
+    // @Override
+    // public void periodic() {
+    //   if (getCurrentCommand() == null) {
+    //     System.out.println("No current command");
+    //   } else {
+    //     System.out.println(getCurrentCommand().getName());
+    //   } 
+    // }
+
     // Sets butter arm to idle position
     public Command idle() {
         return this.run(() -> {
             butterArm.setControl(control.withPosition(0));
            
-        });
+        }).withName("idling Butter Arm :)");
+
     }
     
     // Moves butter arm to butter position
     public Command up() {
         return this.run(() -> {
             butterArm.setControl(control.withPosition(BUTTER_ARM_UP.get()));
-        });
+        }).withName("Butter Arm is up!");
     }
-  
-    
-    
-    
 }

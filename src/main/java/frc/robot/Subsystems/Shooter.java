@@ -23,6 +23,14 @@ public class Shooter extends SubsystemBase {
     flywheelConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     flywheelMotor.getConfigurator().apply(flywheelConfig);
   }
+  // @Override
+  // public void periodic() {
+  //   if (getCurrentCommand() == null) {
+  //     System.out.println("No current command");
+  //   } else {
+  //     System.out.println(getCurrentCommand().getName());
+  //   } 
+  // }
   public Command idle() {
         return this.run(() -> {
      // Stop the flywheel to conserve battery power.
@@ -33,6 +41,6 @@ public class Shooter extends SubsystemBase {
         return this.run(() -> {
           // Run the flywheel at the shooting speed.
           flywheelMotor.setControl(new VoltageOut(SHOOTER_VOLTAGE.get()));
-        });
+        }).withName("Shooting them Balls!");
       }
 }

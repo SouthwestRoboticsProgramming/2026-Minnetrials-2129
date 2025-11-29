@@ -24,6 +24,18 @@ public class Drivebase extends SubsystemBase {
       rightMotor1 = new TalonSRX(3);
       rightMotor2 = new TalonSRX(4);
   }
+
+  
+
+
+  // @Override
+  // public void periodic() {
+  //   if (getCurrentCommand() == null) {
+  //     System.out.println("No current command");
+  //   } else {
+  //     System.out.println(getCurrentCommand().getName());
+  //   } 
+  // }
       
   public Command arcadeDrive(
     Supplier<Double> forwardSupplier,
@@ -34,7 +46,7 @@ public class Drivebase extends SubsystemBase {
       double forward = forwardSupplier.get();
       double turn = turnSupplier.get(); 
       // Calculate how fast each set of wheels should turn.
-      // Calculate how fast each set of wheels should turn.
+        
       double leftWheels = forward + turn;
       double rightWheels = -forward + turn;
 
@@ -52,8 +64,39 @@ public class Drivebase extends SubsystemBase {
       rightMotor1.set(ControlMode.PercentOutput, rightWheels);
       rightMotor2.set(ControlMode.PercentOutput, rightWheels);
         
-      });
+      }).withName("Arcade Drive");
+    }
+    public Command autoAim(Supplier<Double> txSupplier, Supplier<Double> forwardSupplier) {
+      return this.run(() -> {
+        // Get the latest control inputs.
+        double tx = txSupplier.get();
+        double forward = forwardSupplier.get();
+        
+        // Calculate turn value using proportional control.
+        double kP = AIM_kP.get();
+        double turn = tx * kP;
+        
+        // Calculate how fast each set of wheels should turn.
+        double leftWheels = forward + turn;
+        double rightWheels = -forward + turn;
+        
+        // Desaturate wheel speeds if needed.
+        double maxOutput = Math.max(Math.abs(leftWheels), Math.abs(rightWheels));
+        if (maxOutput > 1.0) {
+          // Too fast! Our motor controllers aren't capable of this speed, so we
+          // need to slow it down.
+          leftWheels = leftWheels / maxOutput;
+          rightWheels = rightWheels / maxOutput;
+        }
+        
+        // Tell the motor controllers to spin the motors!
+        leftMotor1.set(ControlMode.PercentOutput, leftWheels);
+        leftMotor2.set(ControlMode.PercentOutput, leftWheels);
+        rightMotor1.set(ControlMode.PercentOutput, rightWheels);
+        rightMotor2.set(ControlMode.PercentOutput, rightWheels);
+      }).withName("Auto aim");
   }
+
   
 }
 

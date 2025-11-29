@@ -18,6 +18,8 @@ public class Intake extends SubsystemBase {
     private final NTEntry<Double> BUTTER_VOLTAGE = new NTDouble("Intake/Butter Voltage", 6.0).setPersistent();
     private final NTEntry<Double> OUTAKE_BOTTOM_VOLTAGE = new NTDouble("Intake/Outake Bottom Voltage", 8.0).setPersistent();
     private final NTEntry<Double> BUTTER_BOTTOM_VOLTAGE = new NTDouble("Intake/Butter Bottom Voltage", -7.0).setPersistent();
+    private final NTEntry<Double> HOLD_BUTTER_PERCENT = new NTDouble("Intake/Hold Butter Percent (0-100%)", 20).setPersistent();
+    private final NTEntry<Double> BUTTER_DETECT_CURRENT_THRESHOLD = new NTDouble("Intake/Butter Detect Current Threshold (Amps)", 15.0).setPersistent();
     // Defines motors
     private final TalonFX intakeTop;
     private final TalonFX intakeBottom;
@@ -38,6 +40,14 @@ public class Intake extends SubsystemBase {
       
         
     } 
+    // @Override
+    // public void periodic() {
+    //   if (getCurrentCommand() == null) {
+    //     System.out.println("No current command");
+    //   } else {
+    //     System.out.println(getCurrentCommand().getName());
+    //   } 
+    // }
     // Sets intake to idle position
     public Command idle() {
         return this.run(() -> {
@@ -52,23 +62,35 @@ public class Intake extends SubsystemBase {
             intakeTop.setControl(new VoltageOut(INTAKE_VOLTAGE.get()));
             intakeBottom.setControl(new VoltageOut(INTAKE_VOLTAGE.get()));
             
-        });
+        }).withName("Intaking Popcorn");
     }
-    // Moves intake to outake position
-    public Command outake() {
+
+    // Shoots the butter out
+    public Command outakeButter() {
         return this.run(() -> {
             intakeTop.setControl(new VoltageOut(OUTAKE_VOLTAGE.get()));
-        intakeBottom.setControl(new VoltageOut(OUTAKE_BOTTOM_VOLTAGE.get()));
-           
-
-        });
+            intakeBottom.setControl(new VoltageOut(OUTAKE_BOTTOM_VOLTAGE.get()));
+        }).withName("Shooting out the butter");
     }
-    // Moves intake to butter position
+    // Spins the wheels to intake the butter
     public Command butter() {
         return this.run(() -> {
             intakeTop.setControl(new VoltageOut(BUTTER_VOLTAGE.get()));
             intakeBottom.setControl(new VoltageOut(BUTTER_BOTTOM_VOLTAGE.get()));
+        }).withName("Intaking the butter");
+    }
+
+    // Holds the butter gently
+    public Command butterHold() {
+        return this.run(() -> {
+            intakeTop.setControl(new VoltageOut(BUTTER_VOLTAGE.get() * HOLD_BUTTER_PERCENT.get() / 100));
+            intakeBottom.setControl(new VoltageOut(BUTTER_BOTTOM_VOLTAGE.get() * HOLD_BUTTER_PERCENT.get() / 100));
         
-        });
+        }).withName("I am Carresing the butter softly");
+    }
+    
+    public boolean hasButter() {
+        // Placeholder for sensor logic to detect butter presence
+        return intakeTop.getStatorCurrent().getValueAsDouble() > BUTTER_DETECT_CURRENT_THRESHOLD.get();
     }
 }
