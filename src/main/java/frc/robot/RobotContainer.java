@@ -63,7 +63,7 @@ public class RobotContainer {
   private void configureBindings() {
     // default commands
     drivebase.setDefaultCommand(drivebase.arcadeDrive(
-      () -> MathUtil.applyDeadband(-driverController.getLeftY(), 0.1),
+      () -> MathUtil.applyDeadband(driverController.getLeftY(), 0.1),
       () -> MathUtil.applyDeadband(driverController.getRightX(), 0.1)));
     
     shooter.setDefaultCommand(shooter.idle());
@@ -72,10 +72,11 @@ public class RobotContainer {
 
     // Popcorn outake
     new Trigger(() -> driverController.getLeftTriggerAxis() > TRIGGER_THRESHOLD.get()).whileTrue(shooter.spinFlywheel());
-    // Popcorn intake
+    // Auto aim
+    driverController.x().whileTrue(drivebase.autoAim(() -> LimelightHelpers.getTX("limelight"), () -> MathUtil.applyDeadband(driverController.getRightX(), 0.1))); 
     new Trigger(()-> driverController.getRightTriggerAxis() > TRIGGER_THRESHOLD.get()).whileTrue(intake.intake());
-    // Auto align command
-    driverController.x().whileTrue(drivebase.autoAim(() -> LimelightHelpers.getTX("limelight"), () -> MathUtil.applyDeadband(driverController.getRightX(), 0.1)));
+    
+    
 
     /*
     Left trigger - outtake butter
@@ -84,13 +85,15 @@ public class RobotContainer {
 
     // Butter outake
     new Trigger(()-> operatorController.getLeftTriggerAxis() > TRIGGER_THRESHOLD.get()).whileTrue(intake.outakeButter());
+    //butter arm up
     operatorController.y().whileTrue(butterArm.up());
+    
     // Butter intake
     new Trigger(()-> operatorController.getRightTriggerAxis() > TRIGGER_THRESHOLD.get())
         .whileTrue(intake.butter()
         .until(() -> intake.hasButter())
         .andThen(intake.butterHold()
-          .alongWith(butterArm.up())));
+          .alongWith(butterArm.score())));
   }  
   
 

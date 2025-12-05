@@ -61,11 +61,16 @@ public class ButterArm extends SubsystemBase {
         }).withName("idling Butter Arm :)");
 
     }
-    
     // Moves butter arm to butter position
     public Command up() {
         return this.run(() -> {
             butterArm.setControl(control.withPosition(BUTTER_ARM_UP.get()));
         }).withName("Butter Arm is up!");
+    }
+    // Moves butter arm to scoring position
+    public Command score() {
+        return this.run(() -> {
+            butterArm.setControl(control.withPosition(BUTTER_ARM_SCORE.get()));
+        }).withName("Scoring Position!");
     }
 }
