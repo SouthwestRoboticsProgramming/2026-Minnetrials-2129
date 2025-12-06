@@ -84,7 +84,9 @@ public class RobotContainer {
     */
 
     // Butter outake
-    new Trigger(()-> operatorController.getLeftTriggerAxis() > TRIGGER_THRESHOLD.get()).whileTrue(intake.outakeButter());
+    new Trigger(()-> operatorController.getLeftTriggerAxis() > TRIGGER_THRESHOLD.get())
+      .whileTrue(intake.outakeButter());
+          .andThen(armMotor.idle())
     //butter arm up
     operatorController.y().whileTrue(armMotor.up());
     
@@ -96,6 +98,7 @@ public class RobotContainer {
         // .alongWith(armMotor.score()));
         .onTrue(
         intake.butter()
+          .alongWith(armMotor.up())
             .until(() -> intake.hasButter()) // This runs until the condition is true
             .andThen(intake.butterHold() // This runs immediately after butter() finishes
                 .alongWith(armMotor.score()) // This runs in parallel with butterHold()

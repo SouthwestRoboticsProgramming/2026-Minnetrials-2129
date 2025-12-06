@@ -38,7 +38,7 @@ public class ButterArm extends SubsystemBase {
      * Creates a new ButterArm subsystem.
      */
     public ButterArm() {
-        armMotor = new TalonFX(MOTOR_ID);
+        armMotor = new TalonFX(7);
         configureMotor();
         // Sets the current measured position (rotations) to the rotation equivalent of 0 degrees.
         armMotor.setPosition(degreesToRotations(STARTING_ANGLE_DEGREES));
@@ -115,7 +115,7 @@ public class ButterArm extends SubsystemBase {
     public Command up() {
         return this.run(() -> {
             
-            armMotor.setPosition(5);
+            armMotor.setPosition(-5);
         });
     }
     public Command score() {
