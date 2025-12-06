@@ -13,7 +13,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class ButterArm extends SubsystemBase {
 
     // --- Constants ---
-    private static final int MOTOR_ID = 10; // Example CAN ID
+    private static final int MOTOR_ID = 7; // Example CAN ID
     private static final double GEAR_RATIO = 100.0; 
     // This value is now 0.0, which means 0 degrees is the starting position 
     // when the encoder is reset.
