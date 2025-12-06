@@ -7,6 +7,7 @@ import frc.robot.RobotContainer;
 public class Autonomous {
     public static Command driveForwardAutoSequence(RobotContainer robot) {
         return Commands.sequence(
+
             robot.drivebase.arcadeDrive(() -> 0.5, () -> 0.0).withTimeout(1)
         );
     }
