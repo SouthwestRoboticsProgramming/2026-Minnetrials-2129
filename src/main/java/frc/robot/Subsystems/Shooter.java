@@ -6,14 +6,13 @@ import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
-
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.net.NTDouble;
 import frc.lib.net.NTEntry;
 
 public class Shooter extends SubsystemBase {
-  private final NTEntry<Double> SHOOTER_VOLTAGE = new NTDouble("Shooter/Shooter Voltage", 6.0).setPersistent();
+  private final NTEntry<Double> SHOOTER_VOLTAGE = new NTDouble("Shooter/Shooter Voltage", 10.0).setPersistent();
   private final TalonFX flywheelMotor;
   
 
@@ -22,6 +21,7 @@ public class Shooter extends SubsystemBase {
     TalonFXConfiguration flywheelConfig = new TalonFXConfiguration();
     flywheelConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     flywheelMotor.getConfigurator().apply(flywheelConfig);
+    flywheelMotor.setInverted(true);
   }
   // @Override
   // public void periodic() {
@@ -40,7 +40,7 @@ public class Shooter extends SubsystemBase {
     public Command spinFlywheel() {
         return this.run(() -> {
           // Run the flywheel at the shooting speed.
-          flywheelMotor.setControl(new VoltageOut(SHOOTER_VOLTAGE.get()));
+          flywheelMotor.setControl(new VoltageOut(10));
         }).withName("Shooting them Balls!");
       }
 }

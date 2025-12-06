@@ -36,7 +36,7 @@ public class RobotContainer {
   public final Drivebase drivebase; 
   public final Shooter shooter;
   public final Intake intake;
-  public final ButterArm butterArm;
+  public final ButterArm armMotor;
 
   private final SendableChooser<Command> autoChooser = new SendableChooser<>();
   
@@ -47,7 +47,7 @@ public class RobotContainer {
     operatorController = new CommandXboxController(1);
     shooter = new Shooter();
     intake = new Intake();
-    butterArm = new ButterArm();
+    armMotor = new ButterArm();
     configureBindings();
     FieldView.publish();
     
@@ -63,19 +63,20 @@ public class RobotContainer {
   private void configureBindings() {
     // default commands
     drivebase.setDefaultCommand(drivebase.arcadeDrive(
-      () -> MathUtil.applyDeadband(-driverController.getLeftY(), 0.1),
+      () -> MathUtil.applyDeadband(driverController.getLeftY(), 0.1),
       () -> MathUtil.applyDeadband(driverController.getRightX(), 0.1)));
     
     shooter.setDefaultCommand(shooter.idle());
     intake.setDefaultCommand(intake.idle());
-    butterArm.setDefaultCommand(butterArm.idle());
+    armMotor.setDefaultCommand(armMotor.idle());
 
     // Popcorn outake
     new Trigger(() -> driverController.getLeftTriggerAxis() > TRIGGER_THRESHOLD.get()).whileTrue(shooter.spinFlywheel());
-    // Popcorn intake
+    // Auto aim
+    driverController.x().whileTrue(drivebase.autoAim(() -> LimelightHelpers.getTX("limelight"), () -> MathUtil.applyDeadband(driverController.getRightX(), 0.1))); 
     new Trigger(()-> driverController.getRightTriggerAxis() > TRIGGER_THRESHOLD.get()).whileTrue(intake.intake());
-    // Auto align command
-    driverController.x().whileTrue(drivebase.autoAim(() -> LimelightHelpers.getTX("limelight"), () -> MathUtil.applyDeadband(driverController.getRightX(), 0.1)));
+    
+    
 
     /*
     Left trigger - outtake butter
@@ -84,13 +85,22 @@ public class RobotContainer {
 
     // Butter outake
     new Trigger(()-> operatorController.getLeftTriggerAxis() > TRIGGER_THRESHOLD.get()).whileTrue(intake.outakeButter());
-    operatorController.y().whileTrue(butterArm.up());
+    //butter arm up
+    operatorController.y().whileTrue(armMotor.up());
+    
     // Butter intake
     new Trigger(()-> operatorController.getRightTriggerAxis() > TRIGGER_THRESHOLD.get())
-        .whileTrue(intake.butter()
-        .until(() -> intake.hasButter())
-        .andThen(intake.butterHold()
-          .alongWith(butterArm.up())));
+        // .whileTrue(intake.butter()
+        // .until(() -> intake.hasButter()))
+        // .andThen(intake.butterHold()
+        // .alongWith(armMotor.score()));
+        .onTrue(
+        intake.butter()
+            .until(() -> intake.hasButter()) // This runs until the condition is true
+            .andThen(intake.butterHold() // This runs immediately after butter() finishes
+                .alongWith(armMotor.score()) // This runs in parallel with butterHold()
+            )
+        );
   }  
   
 

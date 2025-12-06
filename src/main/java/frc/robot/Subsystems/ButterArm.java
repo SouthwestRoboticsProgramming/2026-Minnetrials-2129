@@ -1,71 +1,128 @@
 package frc.robot.subsystems;
-// Import statements
-//import com.ctre.phoenix6.configs.Slot0Configs; need to add
+
+import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.hardware.TalonFX;
-//import com.ctre.phoenix6.signals.GravityTypeValue; need to add
-import com.ctre.phoenix6.signals.InvertedValue;
-//import com.google.flatbuffers.Constants; need to add
+
 import edu.wpi.first.wpilibj2.command.Command;
+// ... (other imports remain the same) ...
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.lib.net.NTEntry;
-import frc.lib.net.NTDouble;
 
-
-// ButterArm subsystem class
 public class ButterArm extends SubsystemBase {
-    // Network table entry for butter arm up position
-    private final NTEntry<Double> BUTTER_ARM_UP = new NTDouble("Butter Arm/Up Position", -30.0).setPersistent();
-    private final NTEntry<Double> BUTTER_ARM_SCORE = new NTDouble("Butter Arm/Down Position", -70.0).setPersistent();
-    // Defines motors
-    private final TalonFX butterArm;
-    private final PositionVoltage control;
-    // Sets up motor configuration
+
+    // --- Constants ---
+    private static final int MOTOR_ID = 7; // Example CAN ID
+    private static final double GEAR_RATIO = 100.0; 
+    // This value is now 0.0, which means 0 degrees is the starting position 
+    // when the encoder is reset.
+    private static final double STARTING_ANGLE_DEGREES = 0.0; 
+    // Sets the current measured position (rotations) to the rotation equivalent of 0 degrees.
+    
+
+    // PID/Motion Magic Constants - (Keep tuning these!)
+    // ... (kP, kI, kD, CRUISE_VELOCITY_ROT, etc. remain the same) ...
+    private static final double kP = 0.1;
+    private static final double kI = 0.0;
+    private static final double kD = 0.0;
+    private static final double kF = 0.0; 
+    private static final double CRUISE_VELOCITY_ROT = 2.0;
+    private static final double ACCELERATION_ROT = 4.0; 
+
+    private final TalonFX armMotor;
+    private final MotionMagicVoltage m_motionMagic = new MotionMagicVoltage(0).withSlot(0);
+    
+
+    /**
+     * Creates a new ButterArm subsystem.
+     */
     public ButterArm() {
-        butterArm = new TalonFX(7);
-        TalonFXConfiguration config = new TalonFXConfiguration();
-        // Set neutral mode to brake
-        // TODO: config.Slot0.kP = Constants.kbutterArmkP.get();
-        // TODO: config.Slot0.kD = Constants.kbutterArmkD.get();
-        config.Slot0.kP = 0.0;
-        config.Slot0.kD = 0.0;
-        
-        control = new PositionVoltage(0);
-        
-
-        // These are determined by the gears in the gearbox and the sprocket on the chain
-        config.Feedback.SensorToMechanismRatio = (54.0 / 28.0);
-        
-        config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
-        butterArm.getConfigurator().apply(config);
-
-        // Tell motor controller where the arm is initially
-        butterArm.setPosition(0.0);
+        armMotor = new TalonFX(MOTOR_ID);
+        configureMotor();
+        // Sets the current measured position (rotations) to the rotation equivalent of 0 degrees.
+        armMotor.setPosition(degreesToRotations(STARTING_ANGLE_DEGREES));
+        // **IMPORTANT:** Do NOT zero here if you want it zeroed every match start.
+        // We will call the zero method from the main Robot class instead.
     }
 
-    // @Override
-    // public void periodic() {
-    //   if (getCurrentCommand() == null) {
-    //     System.out.println("No current command");
-    //   } else {
-    //     System.out.println(getCurrentCommand().getName());
-    //   } 
-    // }
+    // ... (configureMotor() and degreesToRotations() methods remain the same) ...
 
-    // Sets butter arm to idle position
-    public Command idle() {
-        return this.run(() -> {
-            butterArm.setControl(control.withPosition(0));
-           
-        }).withName("idling Butter Arm :)");
+    private double degreesToRotations(double degrees) {
+        return (degrees / 360.0) * GEAR_RATIO;
+    }
 
+    private void configureMotor() {
+        // ... (PID configuration logic remains the same) ...
+        armMotor.getConfigurator().apply(new TalonFXConfiguration());
+        TalonFXConfiguration config = new TalonFXConfiguration();
+
+        Slot0Configs slot0Config = config.Slot0;
+        slot0Config.kP = kP;
+        slot0Config.kI = kI;
+        slot0Config.kD = kD;
+        slot0Config.kS = kF; 
+
+        config.MotionMagic.MotionMagicCruiseVelocity = CRUISE_VELOCITY_ROT;
+        config.MotionMagic.MotionMagicAcceleration = ACCELERATION_ROT;
+
+        armMotor.getConfigurator().apply(config);
     }
     
-    // Moves butter arm to butter position
+    /**
+     * Resets the integrated encoder's position to the starting angle (0 degrees).
+     * This MUST be called at the beginning of every match.
+     */
+    public void zeroArmPosition() {
+        // Set the current motor position to the rotation value that corresponds to 0 degrees
+        armMotor.setPosition(degreesToRotations(STARTING_ANGLE_DEGREES));
+        System.out.println("ButterArm encoder zeroed. Current angle: 0.0 degrees.");
+    }
+    
+    /**
+     * Moves the arm to a specific angle using Motion Magic.
+     * @param targetDegrees The desired angle in degrees.
+     */
+    public void setArmPosition(double targetDegrees) {
+        double targetRotations = degreesToRotations(targetDegrees);
+        armMotor.setControl(m_motionMagic.withPosition(targetRotations));
+    }
+
+    public boolean isAtTarget() {
+        // double tolerance = degreesToRotations(2.0); // 2 degrees tolerance example
+        // double error = armMotor.getPosition().getError();
+        // return Math.abs(error) < tolerance;
+
+        double tolerance = 2.0;
+        var positionSignal = armMotor.getPosition();
+        positionSignal.refresh();
+        double rotations = positionSignal.getValueAsDouble();
+        double positionDegrees = rotations * 360.0;
+
+        return Math.abs(positionDegrees) < tolerance;
+    }
+
+    @Override
+    public void periodic() {
+        // ...
+    }
+    public Command idle() {
+        return this.run(() -> {
+     // Stop the flywheel to conserve battery power.
+     armMotor.setPosition(0.0);
+     });
+    }
     public Command up() {
         return this.run(() -> {
-            butterArm.setControl(control.withPosition(BUTTER_ARM_UP.get()));
-        }).withName("Butter Arm is up!");
+            
+            armMotor.setPosition(5);
+        });
     }
+    public Command score() {
+        return this.run(() -> {
+
+            armMotor.setPosition(10);
+        });
+    }
+
 }

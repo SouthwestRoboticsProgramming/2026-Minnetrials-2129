@@ -43,8 +43,8 @@ public class Drivebase extends SubsystemBase {
     return this.run(() -> {
         
       // Get the latest control inputs.
-      double forward = forwardSupplier.get();
-      double turn = turnSupplier.get(); 
+      double forward = forwardSupplier.get() / 2;
+      double turn = turnSupplier.get() / 2; 
       // Calculate how fast each set of wheels should turn.
         
       double leftWheels = forward + turn;
@@ -52,7 +52,7 @@ public class Drivebase extends SubsystemBase {
 
       // Desaturate wheel speeds if needed.
       double maxOutput = Math.max(Math.abs(leftWheels), Math.abs(rightWheels));
-      if (maxOutput > 1.0) {
+      if (maxOutput > .6) {
         // Too fast! Our motor controllers aren't capable of this speed, so we
         // need to slow it down.
         leftWheels = leftWheels / maxOutput;
@@ -82,7 +82,7 @@ public class Drivebase extends SubsystemBase {
         
         // Desaturate wheel speeds if needed.
         double maxOutput = Math.max(Math.abs(leftWheels), Math.abs(rightWheels));
-        if (maxOutput > 1.0) {
+        if (maxOutput > .6) {
           // Too fast! Our motor controllers aren't capable of this speed, so we
           // need to slow it down.
           leftWheels = leftWheels / maxOutput;
