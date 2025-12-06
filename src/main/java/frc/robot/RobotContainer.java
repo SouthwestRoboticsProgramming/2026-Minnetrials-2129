@@ -84,11 +84,10 @@ public class RobotContainer {
     */
 
     // Butter outake
-    new Trigger(()-> operatorController.getLeftTriggerAxis() > TRIGGER_THRESHOLD.get())
-      .whileTrue(intake.outakeButter());
-          .andThen(armMotor.idle())
+    new Trigger(()-> operatorController.getLeftTriggerAxis() > TRIGGER_THRESHOLD.get()).whileTrue(intake.outakeButter());
+        
     //butter arm up
-    operatorController.y().whileTrue(armMotor.up());
+    
     
     // Butter intake
     new Trigger(()-> operatorController.getRightTriggerAxis() > TRIGGER_THRESHOLD.get())

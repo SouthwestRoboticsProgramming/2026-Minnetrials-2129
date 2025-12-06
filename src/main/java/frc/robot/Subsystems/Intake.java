@@ -55,7 +55,7 @@ public class Intake extends SubsystemBase {
     // Moves intake to run position
     public Command intake() {
         return this.run(() -> {
-            intake.setControl(new VoltageOut(-5));
+            intake.setControl(new VoltageOut(-4.5));
         
             
         }).withName("Intaking Popcorn");
@@ -88,4 +88,8 @@ public class Intake extends SubsystemBase {
         // Placeholder for sensor logic to detect butter presence
         return intake.getStatorCurrent().getValueAsDouble() > BUTTER_DETECT_CURRENT_THRESHOLD.get();
     }
+
+    
+    
+
 }

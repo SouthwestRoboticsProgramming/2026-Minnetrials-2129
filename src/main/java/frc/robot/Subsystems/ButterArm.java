@@ -115,13 +115,13 @@ public class ButterArm extends SubsystemBase {
     public Command up() {
         return this.run(() -> {
             
-            armMotor.setPosition(-5);
+            armMotor.setPosition(10);
         });
     }
     public Command score() {
         return this.run(() -> {
 
-            armMotor.setPosition(10);
+            armMotor.setPosition(20);
         });
     }
 
