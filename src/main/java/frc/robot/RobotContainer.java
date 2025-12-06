@@ -36,7 +36,7 @@ public class RobotContainer {
   public final Drivebase drivebase; 
   public final Shooter shooter;
   public final Intake intake;
-  public final ButterArm butterArm;
+  public final ButterArm armMotor;
 
   private final SendableChooser<Command> autoChooser = new SendableChooser<>();
   
@@ -47,7 +47,7 @@ public class RobotContainer {
     operatorController = new CommandXboxController(1);
     shooter = new Shooter();
     intake = new Intake();
-    butterArm = new ButterArm();
+    armMotor = new ButterArm();
     configureBindings();
     FieldView.publish();
     
@@ -68,7 +68,7 @@ public class RobotContainer {
     
     shooter.setDefaultCommand(shooter.idle());
     intake.setDefaultCommand(intake.idle());
-    butterArm.setDefaultCommand(butterArm.idle());
+    armMotor.setDefaultCommand(armMotor.idle());
 
     // Popcorn outake
     new Trigger(() -> driverController.getLeftTriggerAxis() > TRIGGER_THRESHOLD.get()).whileTrue(shooter.spinFlywheel());
@@ -86,14 +86,21 @@ public class RobotContainer {
     // Butter outake
     new Trigger(()-> operatorController.getLeftTriggerAxis() > TRIGGER_THRESHOLD.get()).whileTrue(intake.outakeButter());
     //butter arm up
-    operatorController.y().whileTrue(butterArm.up());
+    operatorController.y().whileTrue(armMotor.up());
     
     // Butter intake
     new Trigger(()-> operatorController.getRightTriggerAxis() > TRIGGER_THRESHOLD.get())
-        .whileTrue(intake.butter()
-        .until(() -> intake.hasButter())
-        .andThen(intake.butterHold()
-          .alongWith(butterArm.score())));
+        // .whileTrue(intake.butter()
+        // .until(() -> intake.hasButter()))
+        // .andThen(intake.butterHold()
+        // .alongWith(armMotor.score()));
+        .onTrue(
+        intake.butter()
+            .until(() -> intake.hasButter()) // This runs until the condition is true
+            .andThen(intake.butterHold() // This runs immediately after butter() finishes
+                .alongWith(armMotor.score()) // This runs in parallel with butterHold()
+            )
+        );
   }  
   
 

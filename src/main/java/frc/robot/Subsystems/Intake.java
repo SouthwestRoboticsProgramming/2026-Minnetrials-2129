@@ -14,7 +14,7 @@ import frc.lib.net.NTEntry;
 
 public class Intake extends SubsystemBase {
     private final NTEntry<Double> INTAKE_VOLTAGE = new NTDouble("Intake/Intake Voltage", 4.0).setPersistent();
-    private final NTEntry<Double> OUTAKE_VOLTAGE = new NTDouble("Intake/Outake Voltage", -8.0).setPersistent();
+    private final NTEntry<Double> OUTAKE_VOLTAGE = new NTDouble("Intake/Outake Voltage", 8.0).setPersistent();
     private final NTEntry<Double> BUTTER_VOLTAGE = new NTDouble("Intake/Butter Voltage", 6.0).setPersistent();
     private final NTEntry<Double> HOLD_BUTTER_PERCENT = new NTDouble("Intake/Hold Butter Percent (0-100%)", 20).setPersistent();
     private final NTEntry<Double> BUTTER_DETECT_CURRENT_THRESHOLD = new NTDouble("Intake/Butter Detect Current Threshold (Amps)", 15.0).setPersistent();
@@ -55,7 +55,7 @@ public class Intake extends SubsystemBase {
     // Moves intake to run position
     public Command intake() {
         return this.run(() -> {
-            intake.setControl(new VoltageOut(INTAKE_VOLTAGE.get()));
+            intake.setControl(new VoltageOut(-5));
         
             
         }).withName("Intaking Popcorn");
@@ -64,14 +64,14 @@ public class Intake extends SubsystemBase {
     // Shoots the butter out
     public Command outakeButter() {
         return this.run(() -> {
-            intake.setControl(new VoltageOut(OUTAKE_VOLTAGE.get()));
+            intake.setControl(new VoltageOut(6));
             
         }).withName("Shooting out the butter");
     }
     // Spins the wheels to intake the butter
     public Command butter() {
         return this.run(() -> {
-            intake.setControl(new VoltageOut(BUTTER_VOLTAGE.get()));
+            intake.setControl(new VoltageOut(-3));
             
         }).withName("Intaking the butter");
     }
@@ -79,7 +79,7 @@ public class Intake extends SubsystemBase {
     // Holds the butter gently
     public Command butterHold() {
         return this.run(() -> {
-            intake.setControl(new VoltageOut(BUTTER_VOLTAGE.get() * HOLD_BUTTER_PERCENT.get() / 100));
+            intake.setControl(new VoltageOut(-6 * 20 / 100));
         
         }).withName("I am Carresing the butter softly");
     }
