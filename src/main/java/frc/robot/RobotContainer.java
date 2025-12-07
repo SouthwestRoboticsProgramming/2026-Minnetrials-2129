@@ -51,7 +51,11 @@ public class RobotContainer {
     configureBindings();
     FieldView.publish();
     
+<<<<<<< Updated upstream
     autoChooser.setDefaultOption("Drive forward", Autonomous.driveForwardTurnShootAuto(this));
+=======
+    
+>>>>>>> Stashed changes
     
     SmartDashboard.putData("Auto chooser", autoChooser);
     
@@ -107,6 +111,11 @@ public class RobotContainer {
   
 
   public Command getAutonomousCommand() {
-    return autoChooser.getSelected();
+    return Commands.sequence(
+      drivebase.arcadeDrive(() -> -2.0, () -> 0.0).withTimeout(1)
+      .andThen(drivebase.arcadeDrive( () -> 0.0, ()-> 0.0).withTimeout(1))
+      .andThen(shooter.spinFlywheel()).withTimeout(1)
+
+  );
   }
 }
