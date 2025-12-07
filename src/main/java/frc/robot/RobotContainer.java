@@ -96,8 +96,8 @@ public class RobotContainer {
         // .andThen(intake.butterHold()
         // .alongWith(armMotor.score()));
         .onTrue(
-        intake.butter()
-          .alongWith(armMotor.up())
+        armMotor.up()
+          .alongWith(intake.butter())
             .until(() -> intake.hasButter()) // This runs until the condition is true
             .andThen(intake.butterHold() // This runs immediately after butter() finishes
                 .alongWith(armMotor.score()) // This runs in parallel with butterHold()
