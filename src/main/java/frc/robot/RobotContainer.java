@@ -21,10 +21,10 @@ import frc.lib.net.NTEntry;
 import frc.robot.commands.Autonomous;
 import frc.robot.logging.FieldView;
 // Subsystem imports
-import frc.robot.subsystems.ButterArm;
 import frc.robot.subsystems.Drivebase;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Shooter;
+import frc.robot.subsystems.ButterArm;
  
 // This class is where the bulk of the robot should be declared. 
 public class RobotContainer {
@@ -47,7 +47,7 @@ public class RobotContainer {
     operatorController = new CommandXboxController(1);
     shooter = new Shooter();
     intake = new Intake();
-    armMotor = new ButterArm();
+    armMotor = new frc.robot.subsystems.ButterArm();
     configureBindings();
     FieldView.publish();
     
@@ -68,7 +68,7 @@ public class RobotContainer {
     
     shooter.setDefaultCommand(shooter.idle());
     intake.setDefaultCommand(intake.idle());
-    armMotor.setDefaultCommand(armMotor.idle());
+    armMotor.setDefaultCommand(armMotor.setAngleCommand(0));
 
     // Popcorn outake
     new Trigger(() -> driverController.getLeftTriggerAxis() > TRIGGER_THRESHOLD.get()).whileTrue(shooter.spinFlywheel());
@@ -97,10 +97,10 @@ public class RobotContainer {
         // .alongWith(armMotor.score()));
         .onTrue(
         intake.butter()
-          .alongWith(armMotor.up())
-            .until(() -> intake.hasButter()) // This runs until the condition is true
+          .alongWith(armMotor.setAngleCommand(300))
+            .until(intake::hasButter) // This runs until the condition is true
             .andThen(intake.butterHold() // This runs immediately after butter() finishes
-                .alongWith(armMotor.score()) // This runs in parallel with butterHold()
+                .alongWith(armMotor.setAngleCommand(45)) // This runs in parallel with butterHold()
             )
         );
   }  

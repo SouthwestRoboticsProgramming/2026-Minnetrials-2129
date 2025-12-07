@@ -1,128 +1,312 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+
+import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.configs.ClosedLoopRampsConfigs;
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.OpenLoopRampsConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.MotionMagicVoltage;
-import com.ctre.phoenix6.controls.NeutralOut;
+import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
-
+import com.ctre.phoenix6.signals.GravityTypeValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
+import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.math.controller.ArmFeedforward;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.*;
+import edu.wpi.first.wpilibj.simulation.BatterySim;
+import edu.wpi.first.wpilibj.simulation.RoboRioSim;
+import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj2.command.Command;
-// ... (other imports remain the same) ...
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
+/**
+ * Pivot subsystem using TalonFX with Krakenx60 motor
+ */
+@Logged(name = "ElevatorSubsystem")
 public class ButterArm extends SubsystemBase {
 
-    // --- Constants ---
-    private static final int MOTOR_ID = 7; // Example CAN ID
-    private static final double GEAR_RATIO = 100.0; 
-    // This value is now 0.0, which means 0 degrees is the starting position 
-    // when the encoder is reset.
-    private static final double STARTING_ANGLE_DEGREES = 0.0; 
-    // Sets the current measured position (rotations) to the rotation equivalent of 0 degrees.
-    
+  // Constants
+  private final DCMotor dcMotor = DCMotor.getKrakenX60(1);
+  private final int canID = 7;
+  private final double gearRatio = 18;
+  //private final double gearRatio = 1;
+  private final double kP = 1;
+  private final double kI = 0;
+  private final double kD = 0;
+  private final double kS = 0;
+  private final double kV = 0;
+  private final double kA = 0;
+  private final double kG = 0; // Unused for pivots
+  private final double maxVelocity = 35; // rad/s
+  private final double maxAcceleration = 1; // rad/s²
+  private final boolean brakeMode = true;
+  private final boolean enableStatorLimit = true;
+  private final double statorCurrentLimit = 40;
+  private final boolean enableSupplyLimit = false;
+  private final double supplyCurrentLimit = 40;
 
-    // PID/Motion Magic Constants - (Keep tuning these!)
-    // ... (kP, kI, kD, CRUISE_VELOCITY_ROT, etc. remain the same) ...
-    private static final double kP = 0.1;
-    private static final double kI = 0.0;
-    private static final double kD = 0.0;
-    private static final double kF = 0.0; 
-    private static final double CRUISE_VELOCITY_ROT = 2.0;
-    private static final double ACCELERATION_ROT = 4.0; 
+  // Feedforward
+  private final ArmFeedforward feedforward = new ArmFeedforward(
+    kS, // kS
+    0, // kG - Pivot doesn't need gravity compensation
+    kV, // kV
+    kA // kA
+  );
 
-    private final TalonFX armMotor;
-    private final MotionMagicVoltage m_motionMagic = new MotionMagicVoltage(0).withSlot(0);
-    
+  // Motor controller
+  private final TalonFX motor;
+  private final PositionVoltage positionRequest;
+  private final VelocityVoltage velocityRequest;
+  private final StatusSignal<Angle> positionSignal;
+  private final StatusSignal<AngularVelocity> velocitySignal;
+  private final StatusSignal<Voltage> voltageSignal;
+  private final StatusSignal<Current> statorCurrentSignal;
+  private final StatusSignal<Temperature> temperatureSignal;
 
-    /**
-     * Creates a new ButterArm subsystem.
-     */
-    public ButterArm() {
-        armMotor = new TalonFX(7);
-        configureMotor();
-        // Sets the current measured position (rotations) to the rotation equivalent of 0 degrees.
-        armMotor.setPosition(degreesToRotations(STARTING_ANGLE_DEGREES));
-        // **IMPORTANT:** Do NOT zero here if you want it zeroed every match start.
-        // We will call the zero method from the main Robot class instead.
-    }
+  // Simulation
+  private final SingleJointedArmSim pivotSim;
 
-    // ... (configureMotor() and degreesToRotations() methods remain the same) ...
+  /**
+   * Creates a new Pivot Subsystem.
+   */
+  public ButterArm() {
+    // Initialize motor controller
+    motor = new TalonFX(canID);
 
-    private double degreesToRotations(double degrees) {
-        return (degrees / 360.0) * GEAR_RATIO;
-    }
+    // Create control requests
+    positionRequest = new PositionVoltage(0).withSlot(0);
+    velocityRequest = new VelocityVoltage(0).withSlot(0);
 
-    private void configureMotor() {
-        // ... (PID configuration logic remains the same) ...
-        armMotor.getConfigurator().apply(new TalonFXConfiguration());
-        TalonFXConfiguration config = new TalonFXConfiguration();
+    // get status signals
+    positionSignal = motor.getPosition();
+    velocitySignal = motor.getVelocity();
+    voltageSignal = motor.getMotorVoltage();
+    statorCurrentSignal = motor.getStatorCurrent();
+    temperatureSignal = motor.getDeviceTemp();
 
-        Slot0Configs slot0Config = config.Slot0;
-        slot0Config.kP = kP;
-        slot0Config.kI = kI;
-        slot0Config.kD = kD;
-        slot0Config.kS = kF; 
+    TalonFXConfiguration config = new TalonFXConfiguration();
 
-        config.MotionMagic.MotionMagicCruiseVelocity = CRUISE_VELOCITY_ROT;
-        config.MotionMagic.MotionMagicAcceleration = ACCELERATION_ROT;
+    // Configure PID for slot 0
+    Slot0Configs slot0 = config.Slot0;
+    slot0.kP = kP;
+    slot0.kI = kI;
+    slot0.kD = kD;
+    slot0.GravityType = GravityTypeValue.Arm_Cosine;
+    slot0.kS = kS;
+    slot0.kV = kV;
+    slot0.kA = kA;
 
-        armMotor.getConfigurator().apply(config);
-    }
-    
-    /**
-     * Resets the integrated encoder's position to the starting angle (0 degrees).
-     * This MUST be called at the beginning of every match.
-     */
-    public void zeroArmPosition() {
-        // Set the current motor position to the rotation value that corresponds to 0 degrees
-        armMotor.setPosition(degreesToRotations(STARTING_ANGLE_DEGREES));
-        System.out.println("ButterArm encoder zeroed. Current angle: 0.0 degrees.");
-    }
-    
-    /**
-     * Moves the arm to a specific angle using Motion Magic.
-     * @param targetDegrees The desired angle in degrees.
-     */
-    public void setArmPosition(double targetDegrees) {
-        double targetRotations = degreesToRotations(targetDegrees);
-        armMotor.setControl(m_motionMagic.withPosition(targetRotations));
-    }
+    // Set ramp rates
+    OpenLoopRampsConfigs openLoopRamps = config.OpenLoopRamps;
+      openLoopRamps.DutyCycleOpenLoopRampPeriod = 0.001;
 
-    public boolean isAtTarget() {
-        // double tolerance = degreesToRotations(2.0); // 2 degrees tolerance example
-        // double error = armMotor.getPosition().getError();
-        // return Math.abs(error) < tolerance;
+    ClosedLoopRampsConfigs closedLoopRamps = config.ClosedLoopRamps;
+      closedLoopRamps.VoltageClosedLoopRampPeriod = 0.001;
 
-        double tolerance = 2.0;
-        var positionSignal = armMotor.getPosition();
-        positionSignal.refresh();
-        double rotations = positionSignal.getValueAsDouble();
-        double positionDegrees = rotations * 360.0;
+    // Set current limits
+    CurrentLimitsConfigs currentLimits = config.CurrentLimits;
+    currentLimits.StatorCurrentLimit = statorCurrentLimit;
+    currentLimits.StatorCurrentLimitEnable = enableStatorLimit;
+    currentLimits.SupplyCurrentLimit = supplyCurrentLimit;
+    currentLimits.SupplyCurrentLimitEnable = enableSupplyLimit;
 
-        return Math.abs(positionDegrees) < tolerance;
-    }
+    // Set brake mode
+    config.MotorOutput.NeutralMode = brakeMode
+      ? NeutralModeValue.Brake
+      : NeutralModeValue.Coast;
 
-    @Override
-    public void periodic() {
-        // ...
-    }
-    public Command idle() {
-        return this.run(() -> {
-     // Stop the flywheel to conserve battery power.
-     armMotor.setPosition(0.0);
-     });
-    }
-    public Command up() {
-        return this.run(() -> {
-            
-            armMotor.setPosition(10);
-        });
-    }
-    public Command score() {
-        return this.run(() -> {
+    // Apply gear ratio
+    config.Feedback.SensorToMechanismRatio = gearRatio;
 
-            armMotor.setPosition(20);
-        });
-    }
+    // Apply configuration
+    motor.getConfigurator().apply(config);
 
+    // Reset encoder position
+    motor.setPosition(0);
+
+    // Initialize simulation
+    pivotSim = new SingleJointedArmSim(
+      dcMotor, // Motor type
+      gearRatio,
+      0.01, // Arm moment of inertia - Small value since there are no arm parameters
+      0.1, // Arm length (m) - Small value since there are no arm parameters
+      Units.degreesToRadians(-90), // Min angle (rad)
+      Units.degreesToRadians(90), // Max angle (rad)
+      false, // Simulate gravity - Disable gravity for pivot
+      Units.degreesToRadians(0) // Starting position (rad)
+    );
+  }
+
+  /**
+   * Update simulation and telemetry.
+   */
+  @Override
+  public void periodic() {
+    BaseStatusSignal.refreshAll(
+      positionSignal,
+      velocitySignal,
+      voltageSignal,
+      statorCurrentSignal,
+      temperatureSignal
+    );
+  }
+
+  /**
+   * Update simulation.
+   */
+
+  /**
+   * Get the current position in Rotations.
+   * @return Position in Rotations
+   */
+  @Logged(name = "Position/Rotations")
+  public double getPosition() {
+    // Rotations
+    return positionSignal.getValueAsDouble();
+  }
+
+  /**
+   * Get the current velocity in rotations per second.
+   * @return Velocity in rotations per second
+   */
+  @Logged(name = "Velocity")
+  public double getVelocity() {
+    return velocitySignal.getValueAsDouble();
+  }
+
+  /**
+   * Get the current applied voltage.
+   * @return Applied voltage
+   */
+  @Logged(name = "Voltage")
+  public double getVoltage() {
+    return voltageSignal.getValueAsDouble();
+  }
+
+  /**
+   * Get the current motor current.
+   * @return Motor current in amps
+   */
+  public double getCurrent() {
+    return statorCurrentSignal.getValueAsDouble();
+  }
+
+  /**
+   * Get the current motor temperature.
+   * @return Motor temperature in Celsius
+   */
+  public double getTemperature() {
+    return temperatureSignal.getValueAsDouble();
+  }
+
+  /**
+   * Set pivot angle.
+   * @param angleDegrees The target angle in degrees
+   */
+  public void setAngle(double angleDegrees) {
+    setAngle(angleDegrees, 0);
+  }
+
+  /**
+   * Set pivot angle with acceleration.
+   * @param angleDegrees The target angle in degrees
+   * @param acceleration The acceleration in rad/s²
+   */
+  public void setAngle(double angleDegrees, double acceleration) {
+    // Convert degrees to rotations
+    double angleRadians = Units.degreesToRadians(angleDegrees);
+    double positionRotations = angleRadians / (2.0 * Math.PI);
+
+    double ffVolts = feedforward.calculate(getVelocity(), acceleration);
+    //motor.setControl(positionRequest.withPosition(positionRotations).withFeedForward(ffVolts));
+    motor.setControl(positionRequest.withPosition(positionRotations));
+  }
+
+  /**
+   * Set pivot angular velocity.
+   * @param velocityDegPerSec The target velocity in degrees per second
+   */
+  public void setVelocity(double velocityDegPerSec) {
+    setVelocity(velocityDegPerSec, 0);
+  }
+
+  /**
+   * Set pivot angular velocity with acceleration.
+   * @param velocityDegPerSec The target velocity in degrees per second
+   * @param acceleration The acceleration in degrees per second squared
+   */
+  public void setVelocity(double velocityDegPerSec, double acceleration) {
+    // Convert degrees/sec to rotations/sec
+    double velocityRadPerSec = Units.degreesToRadians(velocityDegPerSec);
+    double velocityRotations = velocityRadPerSec / (2.0 * Math.PI);
+
+    double ffVolts = feedforward.calculate(getVelocity(), acceleration);
+    //motor.setControl(velocityRequest.withVelocity(velocityRotations).withFeedForward(ffVolts));
+    motor.setControl(velocityRequest.withVelocity(velocityRotations));
+  }
+
+  /**
+   * Set motor voltage directly.
+   * @param voltage The voltage to apply
+   */
+  public void setVoltage(double voltage) {
+    motor.setVoltage(voltage);
+  }
+
+
+  /**
+   * Creates a command to set the pivot to a specific angle.
+   * @param angleDegrees The target angle in degrees
+   * @return A command that sets the pivot to the specified angle
+   */
+  public Command setAngleCommand(double angleDegrees) {
+    return runOnce(() -> setAngle(angleDegrees));
+  }
+
+  /**
+   * Creates a command to move the pivot to a specific angle with a profile.
+   * @param angleDegrees The target angle in degrees
+   * @return A command that moves the pivot to the specified angle
+   */
+  public Command moveToAngleCommand(double angleDegrees) {
+    return run(() -> {
+      double currentAngle = Units.radiansToDegrees(getPosition());
+      double error = angleDegrees - currentAngle;
+      double velocityDegPerSec =
+        Math.signum(error) *
+        Math.min(Math.abs(error) * 2.0, Units.radiansToDegrees(maxVelocity));
+      setVelocity(velocityDegPerSec);
+    })
+      .until(() -> {
+        double currentAngle = Units.radiansToDegrees(getPosition());
+        return Math.abs(angleDegrees - currentAngle) < 0.5; // 2 degree tolerance
+      })
+      .finallyDo(interrupted -> setVelocity(0));
+  }
+
+  /**
+   * Creates a command to stop the pivot.
+   * @return A command that stops the pivot
+   */
+  public Command stopCommand() {
+    return runOnce(() -> setVelocity(0));
+  }
+
+  /**
+   * Creates a command to move the pivot at a specific velocity.
+   * @param velocityDegPerSec The target velocity in degrees per second
+   * @return A command that moves the pivot at the specified velocity
+   */
+  public Command moveAtVelocityCommand(double velocityDegPerSec) {
+    return run(() -> setVelocity(velocityDegPerSec));
+  }
 }
