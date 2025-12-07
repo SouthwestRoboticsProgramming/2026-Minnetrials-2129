@@ -13,22 +13,20 @@ public class ButterArm extends SubsystemBase {
 
     // --- Arm Angle Constants (Degrees) ---
     private static final double STARTING_ANGLE_DEGREES = 0.0; // The 'Idle' position (always 0 degrees)
-    private static final double UP_ANGLE_DEGREES = 8;     // Angle to pick up a game piece (TUNE THIS)
-    private static final double SCORE_ANGLE_DEGREES = 29.0;  // Angle for scoring (TUNE THIS)
+    private static final double UP_ANGLE_DEGREES = 18;     // Angle to pick up a game piece (TUNE THIS)
+    private static final double SCORE_ANGLE_DEGREES = 28;  // Angle for scoring (TUNE THIS)
 
     // --- Motor/Mechanism Constants ---
     private static final double GEAR_RATIO_NUMERATOR = 18;
-    
-    private static final double GEAR_RATIO_DENOMINATOR = 1.0;
+    private static final double GEAR_RATIO_DENOMINATOR = 1;
     private static final double GEAR_RATIO = GEAR_RATIO_NUMERATOR / GEAR_RATIO_DENOMINATOR; 
     
     // --- PID/Motion Magic Constants (Tune these!) ---
     private static final double kP = 5; 
     private static final double kI = 0.0;
-
-    private static final double kD = 0.01;
+    private static final double kD = 0.05;
     private static final double GRAVITY_FEEDFORWARD_VOLTAGE_AT_MAX = 0.5; // TUNE THIS
-    private static final double CRUISE_VELOCITY_ROT = 5.0; 
+    private static final double CRUISE_VELOCITY_ROT = 2.0; 
     private static final double ACCELERATION_ROT = 4.0;    
 
     private final TalonFX armMotor;
@@ -42,7 +40,7 @@ public class ButterArm extends SubsystemBase {
         configureMotor();
         
         // Zeros the encoder at the physical start position (0 degrees)
-        armMotor.setPosition(degreesToRotations(STARTING_ANGLE_DEGREES));
+        armMotor.setPosition(0);
         
         // Call idleCommand() as the default command so the arm always tries to hold 0 degrees.
         setDefaultCommand(idle());
@@ -55,10 +53,7 @@ public class ButterArm extends SubsystemBase {
     /**
      * Converts an angle in degrees to the equivalent motor rotations for Motion Magic.
      */
-    private double degreesToRotations(double degrees) {
-        // Motor Rotations = (Degrees / 360.0) / GEAR_RATIO
-        return (degrees / 360.0) / GEAR_RATIO;
-    }
+    
 
     /**
      * Configures the TalonFX for Motion Magic control.
@@ -84,7 +79,7 @@ public class ButterArm extends SubsystemBase {
      * Resets the integrated encoder's position to the starting angle (0 degrees).
      */
     public void zeroArmPosition() {
-        armMotor.setPosition(degreesToRotations(STARTING_ANGLE_DEGREES));
+        armMotor.setPosition(0);
         System.out.println("ButterArm encoder zeroed. Current angle: 0.0 degrees.");
     }
 
@@ -137,9 +132,9 @@ public class ButterArm extends SubsystemBase {
      * Generic command to move the arm to a target angle using Motion Magic 
      * and applying dynamic gravity feedforward.
      */
-    private Command goToPositionCommand(double targetRotations) {
+    private Command goToPositionCommand(double targetDegrees) {
         return this.run(() -> {
-            
+            double targetRotations = (targetDegrees);
             double kG = calculateGravityFeedforward();
             
             // Set the target position AND the feedforward voltage (kG)

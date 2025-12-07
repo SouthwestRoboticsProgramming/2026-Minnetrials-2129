@@ -38,7 +38,7 @@ public class RobotContainer {
   public final Intake intake;
   public final ButterArm armMotor;
 
-  private final SendableChooser<Command> autoChooser = new SendableChooser<>();
+  
   
   // Constructor
   public RobotContainer() {
@@ -51,13 +51,9 @@ public class RobotContainer {
     configureBindings();
     FieldView.publish();
     
-<<<<<<< Updated upstream
-    autoChooser.setDefaultOption("Drive forward", Autonomous.driveForwardTurnShootAuto(this));
-=======
     
->>>>>>> Stashed changes
     
-    SmartDashboard.putData("Auto chooser", autoChooser);
+    
     
     DriverStation.silenceJoystickConnectionWarning(true);
   }
@@ -75,12 +71,12 @@ public class RobotContainer {
     armMotor.setDefaultCommand(armMotor.idle());
 
     // Popcorn outake
-    new Trigger(() -> operatorController.getLeftTriggerAxis() > TRIGGER_THRESHOLD.get()).whileTrue(shooter.spinFlywheel());
+    new Trigger(() -> driverController.getLeftTriggerAxis() > TRIGGER_THRESHOLD.get()).whileTrue(shooter.spinFlywheel());
     // Auto aim
     driverController.x().whileTrue(drivebase.autoAim(() -> LimelightHelpers.getTX("limelight"), () -> MathUtil.applyDeadband(driverController.getRightX(), 0.1))); 
-    new Trigger(()-> operatorController.getRightTriggerAxis() > TRIGGER_THRESHOLD.get()).whileTrue(intake.intake());
+    new Trigger(()-> driverController.getRightTriggerAxis() > TRIGGER_THRESHOLD.get()).whileTrue(intake.intake());
     
-  
+    
 
     /*
     Left trigger - outtake butter
@@ -100,8 +96,8 @@ public class RobotContainer {
         // .andThen(intake.butterHold()
         // .alongWith(armMotor.score()));
         .onTrue(
-        armMotor.up()
-          .alongWith(intake.butter())
+        intake.butter()
+          .alongWith(armMotor.up()).withTimeout(4)
             .until(() -> intake.hasButter()) // This runs until the condition is true
             .andThen(intake.butterHold() // This runs immediately after butter() finishes
                 .alongWith(armMotor.score()) // This runs in parallel with butterHold()
@@ -112,10 +108,12 @@ public class RobotContainer {
 
   public Command getAutonomousCommand() {
     return Commands.sequence(
-      drivebase.arcadeDrive(() -> -2.0, () -> 0.0).withTimeout(1)
-      .andThen(drivebase.arcadeDrive( () -> 0.0, ()-> 0.0).withTimeout(1))
-      .andThen(shooter.spinFlywheel()).withTimeout(1)
+            drivebase.arcadeDrive(() -> -3.0, () -> 0.0).withTimeout(.5)
+              .andThen(drivebase.arcadeDrive(() -> 0.0, () -> 0.0)).withTimeout(1.0)
+              .andThen(shooter.spinFlywheel()).withTimeout(1.0)
 
-  );
+
+
+        );
   }
 }
