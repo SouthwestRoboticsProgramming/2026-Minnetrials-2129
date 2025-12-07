@@ -1,7 +1,6 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -13,10 +12,7 @@ import frc.lib.net.NTDouble;
 import frc.lib.net.NTEntry;
 
 public class Intake extends SubsystemBase {
-    private final NTEntry<Double> INTAKE_VOLTAGE = new NTDouble("Intake/Intake Voltage", 4.0).setPersistent();
-    private final NTEntry<Double> OUTAKE_VOLTAGE = new NTDouble("Intake/Outake Voltage", 8.0).setPersistent();
-    private final NTEntry<Double> BUTTER_VOLTAGE = new NTDouble("Intake/Butter Voltage", 6.0).setPersistent();
-    private final NTEntry<Double> HOLD_BUTTER_PERCENT = new NTDouble("Intake/Hold Butter Percent (0-100%)", 20).setPersistent();
+    
     private final NTEntry<Double> BUTTER_DETECT_CURRENT_THRESHOLD = new NTDouble("Intake/Butter Detect Current Threshold (Amps)", 15.0).setPersistent();
     // Defines motors
     private final TalonFX intake;
