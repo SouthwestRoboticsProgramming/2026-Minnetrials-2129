@@ -13,8 +13,8 @@ public class ButterArm extends SubsystemBase {
 
     // --- Arm Angle Constants (Degrees) ---
     private static final double STARTING_ANGLE_DEGREES = 0.0; // The 'Idle' position (always 0 degrees)
-    private static final double UP_ANGLE_DEGREES = 20.0;     // Angle to pick up a game piece (TUNE THIS)
-    private static final double SCORE_ANGLE_DEGREES = 40.0;  // Angle for scoring (TUNE THIS)
+    private static final double UP_ANGLE_DEGREES = 8;     // Angle to pick up a game piece (TUNE THIS)
+    private static final double SCORE_ANGLE_DEGREES = 29.0;  // Angle for scoring (TUNE THIS)
 
     // --- Motor/Mechanism Constants ---
     private static final double GEAR_RATIO_NUMERATOR = 18;
@@ -23,11 +23,12 @@ public class ButterArm extends SubsystemBase {
     private static final double GEAR_RATIO = GEAR_RATIO_NUMERATOR / GEAR_RATIO_DENOMINATOR; 
     
     // --- PID/Motion Magic Constants (Tune these!) ---
-    private static final double kP = 3; 
+    private static final double kP = 5; 
     private static final double kI = 0.0;
-    private static final double kD = 0.0;
+
+    private static final double kD = 0.01;
     private static final double GRAVITY_FEEDFORWARD_VOLTAGE_AT_MAX = 0.5; // TUNE THIS
-    private static final double CRUISE_VELOCITY_ROT = 2.0; 
+    private static final double CRUISE_VELOCITY_ROT = 5.0; 
     private static final double ACCELERATION_ROT = 4.0;    
 
     private final TalonFX armMotor;
@@ -136,9 +137,9 @@ public class ButterArm extends SubsystemBase {
      * Generic command to move the arm to a target angle using Motion Magic 
      * and applying dynamic gravity feedforward.
      */
-    private Command goToPositionCommand(double targetDegrees) {
+    private Command goToPositionCommand(double targetRotations) {
         return this.run(() -> {
-            double targetRotations = degreesToRotations(targetDegrees);
+            
             double kG = calculateGravityFeedforward();
             
             // Set the target position AND the feedforward voltage (kG)

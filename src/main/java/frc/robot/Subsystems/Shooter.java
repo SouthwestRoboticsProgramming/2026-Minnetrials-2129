@@ -39,7 +39,7 @@ public class Shooter extends SubsystemBase {
     public Command spinFlywheel() {
         return this.run(() -> {
           // Run the flywheel at the shooting speed.
-          flywheelMotor.setControl(new VoltageOut(10));
+          flywheelMotor.setControl(new VoltageOut(9.5));
         }).withName("Shooting them Balls!");
       }
 }

@@ -13,7 +13,7 @@ import frc.lib.net.NTEntry;
 
 public class Intake extends SubsystemBase {
     
-    private final NTEntry<Double> BUTTER_DETECT_CURRENT_THRESHOLD = new NTDouble("Intake/Butter Detect Current Threshold (Amps)", 15.0).setPersistent();
+    private final NTEntry<Double> BUTTER_DETECT_CURRENT_THRESHOLD = new NTDouble("Intake/Butter Detect Current Threshold (Amps)", 30.0).setPersistent();
     // Defines motors
     private final TalonFX intake;
   

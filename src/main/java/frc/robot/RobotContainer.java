@@ -51,7 +51,7 @@ public class RobotContainer {
     configureBindings();
     FieldView.publish();
     
-    autoChooser.setDefaultOption("Drive forward", Autonomous.driveForwardAutoSequence(this));
+    autoChooser.setDefaultOption("Drive forward", Autonomous.driveForwardTurnShootAuto(this));
     
     SmartDashboard.putData("Auto chooser", autoChooser);
     
@@ -71,12 +71,12 @@ public class RobotContainer {
     armMotor.setDefaultCommand(armMotor.idle());
 
     // Popcorn outake
-    new Trigger(() -> driverController.getLeftTriggerAxis() > TRIGGER_THRESHOLD.get()).whileTrue(shooter.spinFlywheel());
+    new Trigger(() -> operatorController.getLeftTriggerAxis() > TRIGGER_THRESHOLD.get()).whileTrue(shooter.spinFlywheel());
     // Auto aim
     driverController.x().whileTrue(drivebase.autoAim(() -> LimelightHelpers.getTX("limelight"), () -> MathUtil.applyDeadband(driverController.getRightX(), 0.1))); 
-    new Trigger(()-> driverController.getRightTriggerAxis() > TRIGGER_THRESHOLD.get()).whileTrue(intake.intake());
+    new Trigger(()-> operatorController.getRightTriggerAxis() > TRIGGER_THRESHOLD.get()).whileTrue(intake.intake());
     
-    
+  
 
     /*
     Left trigger - outtake butter
